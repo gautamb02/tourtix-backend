@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const constants = require('../config/constants')
 
 const secretKey = constants.JWT_SECRET; 
-const saltRounds = constants.SALT_ROUNDS; // Number of salt rounds for bcrypt
+const saltRounds = 10; // Number of salt rounds for bcrypt
 
 // Function to generate JWT token
 function generateJWTToken(payload) {
