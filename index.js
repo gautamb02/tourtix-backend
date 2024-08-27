@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/auth.routes"));
 
 // Swagger Docs
+const SW_CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 
 const swaggerOptions = {
   definition: {
@@ -37,7 +38,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:8080",
+        url: "https://tourtix-backend.vercel.app",
       },
     ],
   },
@@ -45,7 +46,12 @@ const swaggerOptions = {
 };
 
 const specs = sw_jsdoc(swaggerOptions);
-app.use("/docs", sw_ui.serve, sw_ui.setup(specs));
+// app.use("/api-docs", sw_ui.serve, sw_ui.setup(specs));
+app.use(
+  "/docs",
+  sw_ui.serve,
+  sw_ui.setup(specs, { customCssUrl: SW_CSS_URL })
+);
 
 //Running the application
 app.listen(port, () => {
