@@ -9,7 +9,7 @@ const organizationMiddleware = require('../middleware/organization.middleware');
 
 authRouter.post('/signup',bypass, async (req, res) => {
   const { organizationName, email, password } = req.body;
-  console.log("hitted signup")
+  // console.log("hitted signup")
 
   if (!organizationName || !email || !password) {
     return res.status(400).json({success : 0, message: 'All fields are required' });
@@ -32,7 +32,7 @@ authRouter.post('/signup',bypass, async (req, res) => {
 
 authRouter.post('/login',bypass, async (req, res) => {
   const { email, password } = req.body;
-  console.log("hitted login")
+  // console.log("hitted login")
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Email and password are required' });
@@ -52,7 +52,7 @@ authRouter.post('/login',bypass, async (req, res) => {
     }
 
     const token = await generateJWTToken({id : organization._id});
-    res.status(200).json({ success : 1, message: 'Login successful', token });
+    res.status(200).json({ success : 1, message: 'Login successful', token, organization });
   } catch (err) {
     res.status(500).json({ success:0 ,message: 'Error logging in', error: err.message });
   }
@@ -112,7 +112,7 @@ module.exports = authRouter;
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "contact@example.com"
+ *                 example: "tarun@example.com"
  *               password:
  *                 type: string
  *                 format: password
@@ -137,12 +137,13 @@ module.exports = authRouter;
  *                   example: "Organization created successfully"
  */
 
+
 /**
  * @swagger
  * /api/auth/login:
  *   post:
  *     summary: Login an organization
- *     description: Authenticates an organization by email and password, returning a JWT token if successful.
+ *     description: Authenticates an organization by email and password, returning a JWT token and organization details if successful.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -155,7 +156,7 @@ module.exports = authRouter;
  *               email:
  *                 type: string
  *                 format: email
- *                 example: "contact@example.com"
+ *                 example: "tarun@example.com"
  *               password:
  *                 type: string
  *                 format: password
@@ -180,7 +181,28 @@ module.exports = authRouter;
  *                 token:
  *                   type: string
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ *                 organization:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "66cdda77b5dd03dc02a0a699"
+ *                     organizationName:
+ *                       type: string
+ *                       example: "Example Org"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "tarun@example.com"
+ *                     password:
+ *                       type: string
+ *                       format: password
+ *                       example: "$2b$10$Nnzl0Bt50px.R.Nxh/7treSQzgxtFZS9XV6Fd7Xh9p1LiGRhxJD8."
+ *                     onboarded:
+ *                       type: boolean
+ *                       example: false
  */
+
 
 /**
  * @swagger
