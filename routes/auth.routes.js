@@ -6,6 +6,91 @@ const authRouter = express.Router();
 const Organization = require('../models/organization.models');
 const organizationMiddleware = require('../middleware/organization.middleware');
 
+
+authRouter.post('/signup',bypass, async (req, res) => {
+  const { organizationName, email, password } = req.body;
+  console.log("hitted signup")
+
+  if (!organizationName || !email || !password) {
+    return res.status(400).json({success : 0, message: 'All fields are required' });
+  }
+
+  try {
+    const hashedPassword = await encryptPassword(password);
+    const organization = new Organization({
+      organizationName,
+      email,
+      password: hashedPassword
+    });
+
+    await organization.save();
+    res.status(201).json({ success : 1, message: 'Organization created successfully' });
+  } catch (err) {
+    res.status(500).json({ success : 0,message: 'Error creating organization', error: err.message });
+  }
+});
+
+authRouter.post('/login',bypass, async (req, res) => {
+  const { email, password } = req.body;
+  console.log("hitted login")
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    const organization = await Organization.findOne({ email });
+
+    if (!organization) {
+      return res.status(401).json({success : 0, message: 'Invalid email or password' });
+    }
+
+    const isMatch =  await decryptPassword(password, organization.password)
+
+    if (!isMatch) {
+      return res.status(401).json({success : 0, message: 'Invalid email or password' });
+    }
+
+    const token = await generateJWTToken({id : organization._id});
+    res.status(200).json({ success : 1, message: 'Login successful', token });
+  } catch (err) {
+    res.status(500).json({ success:0 ,message: 'Error logging in', error: err.message });
+  }
+});
+
+authRouter.post('/change-password',organizationMiddleware, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const success  = 0;
+  if ( !oldPassword || !newPassword) {
+    return res.status(400).json({success, message: 'Token, old password, and new password are required' });
+  }
+
+  try {
+   
+    const organization = req.organization;
+
+    if (!organization) {
+      return res.status(404).json({success, message: 'Organization not found' });
+    }
+
+    const isMatch = await decryptPassword(oldPassword, organization.password)
+
+    if (!isMatch) {
+      return res.status(401).json({success, message: 'Old password is incorrect' });
+    }
+
+    const hashedNewPassword = await encryptPassword(newPassword)
+    organization.password = hashedNewPassword;
+    await organization.save();
+
+    res.status(200).json({ 'success' :1,message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ success,message: 'Error changing password', error: err.message });
+  }
+});
+
+module.exports = authRouter;
+
 /**
  * @swagger
  * /api/auth/signup:
@@ -143,86 +228,3 @@ const organizationMiddleware = require('../middleware/organization.middleware');
  *                   type: string
  *                   example: "Password changed successfully"
  */
-
-
-authRouter.post('/signup',bypass, async (req, res) => {
-  const { organizationName, email, password } = req.body;
-
-  if (!organizationName || !email || !password) {
-    return res.status(400).json({success : 0, message: 'All fields are required' });
-  }
-
-  try {
-    const hashedPassword = await encryptPassword(password);
-    const organization = new Organization({
-      organizationName,
-      email,
-      password: hashedPassword
-    });
-
-    await organization.save();
-    res.status(201).json({ success : 1, message: 'Organization created successfully' });
-  } catch (err) {
-    res.status(500).json({ success : 0,message: 'Error creating organization', error: err.message });
-  }
-});
-
-authRouter.post('/login',bypass, async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
-  }
-
-  try {
-    const organization = await Organization.findOne({ email });
-
-    if (!organization) {
-      return res.status(401).json({success : 0, message: 'Invalid email or password' });
-    }
-
-    const isMatch =  await decryptPassword(password, organization.password)
-
-    if (!isMatch) {
-      return res.status(401).json({success : 0, message: 'Invalid email or password' });
-    }
-
-    const token = await generateJWTToken({id : organization._id});
-    res.status(200).json({ success : 1, message: 'Login successful', token });
-  } catch (err) {
-    res.status(500).json({ success:0 ,message: 'Error logging in', error: err.message });
-  }
-});
-
-authRouter.post('/change-password',organizationMiddleware, async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const success  = 0;
-  if ( !oldPassword || !newPassword) {
-    return res.status(400).json({success, message: 'Token, old password, and new password are required' });
-  }
-
-  try {
-   
-    const organization = req.organization;
-
-    if (!organization) {
-      return res.status(404).json({success, message: 'Organization not found' });
-    }
-
-    const isMatch = await decryptPassword(oldPassword, organization.password)
-
-    if (!isMatch) {
-      return res.status(401).json({success, message: 'Old password is incorrect' });
-    }
-
-    const hashedNewPassword = await encryptPassword(newPassword)
-    organization.password = hashedNewPassword;
-    await organization.save();
-
-    res.status(200).json({ 'success' :1,message: 'Password changed successfully' });
-  } catch (err) {
-    res.status(500).json({ success,message: 'Error changing password', error: err.message });
-  }
-});
-
-module.exports = authRouter;
