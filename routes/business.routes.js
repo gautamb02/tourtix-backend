@@ -6,21 +6,44 @@ const BusinessProfile = require("../models/business.models");
 
 const businessRouter = express.Router();
 
-businessRouter.get("/hello", bypass, (req, res) => {
-  res.send("Hello");
-});
-
 businessRouter.post("/onboard", organizationMiddleware, async (req, res) => {
   try {
     const orgId = req.organization._id;
 
     // Required fields for the BusinessProfile
-    const { businessName, category, address, city, pincode, state, country, geolocation, phone, email, website, hours, description, photos
+    const {
+      businessName,
+      category,
+      address,
+      city,
+      pincode,
+      state,
+      country,
+      geolocation,
+      phone,
+      email,
+      website,
+      hours,
+      description,
+      photos,
     } = req.body;
 
     // Validate that all required fields are present
     if (
-      !businessName || !category || !address || !city || !pincode || !state || !country || !geolocation || !phone || !email || !website || !hours || !description || !photos
+      !businessName ||
+      !category ||
+      !address ||
+      !city ||
+      !pincode ||
+      !state ||
+      !country ||
+      !geolocation ||
+      !phone ||
+      !email ||
+      !website ||
+      !hours ||
+      !description ||
+      !photos
     ) {
       return res.status(400).json({
         success: 0,
@@ -30,7 +53,21 @@ businessRouter.post("/onboard", organizationMiddleware, async (req, res) => {
 
     // Create new BusinessProfile entry
     const newBusiness = new BusinessProfile({
-      orgId,   businessName,category,address,city,pincode,state,country,geolocation,phone,email,website,hours,description,photos,
+      orgId,
+      businessName,
+      category,
+      address,
+      city,
+      pincode,
+      state,
+      country,
+      geolocation,
+      phone,
+      email,
+      website,
+      hours,
+      description,
+      photos,
     });
 
     // Save the new BusinessProfile to the database
@@ -42,7 +79,23 @@ businessRouter.post("/onboard", organizationMiddleware, async (req, res) => {
     // Respond with success
     res.status(201).json({ success: 1, savedBusiness });
   } catch (err) {
-    res.status(400).json({ success: 0, error: err.message });
+    res.status(400).json({ success: 0, message: err.message });
+  }
+});
+
+businessRouter.get("/getbusiness", organizationMiddleware, async (req, res) => {
+  try {
+    const orgId = req.organization._id;
+
+    const business = await BusinessProfile.findOne({ orgId: orgId });
+
+    if (!business) {
+      return res.status(404).json({ success: 0, message: "No Business Found" });
+    } else {
+      res.status(200).json({ success: 1, business });
+    }
+  } catch (error) {
+    res.status(400).json({ success: 0, message: err.message });
   }
 });
 
