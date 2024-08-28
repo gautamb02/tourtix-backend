@@ -3,7 +3,7 @@ const Organization = require('../models/organization.models');
 
 const organizationMiddleware = async (req, res, next) => {
     const authHeader = await req.headers['authorization'];
-    console.log(authHeader)
+    // console.log(authHeader)
     const success = 0;
     if (authHeader && authHeader.startsWith('Bearer ')) {
         // Extract the token from the header
