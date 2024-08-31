@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
-// Define the Organization schema
 const organizationSchema = new mongoose.Schema({
   organizationName: {
     type: String,
