@@ -18,7 +18,7 @@ router.post('/activity',organizationMiddleware, async (req, res) => {
     await activity.save();
     res.status(201).json(activity);
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     res.status(400).json({ message: error.message });
   }
 });
@@ -65,7 +65,7 @@ router.put('/activity/:id', async (req, res) => {
 });
 
 // Delete Activity
-router.delete('/activity/:id', async (req, res) => {
+router.delete('/activity/:id', organizationMiddleware, async (req, res) => {
   try {
     const activity = await Activity.findByIdAndDelete(req.params.id);
     if (!activity) return res.status(404).json({ message: 'Activity not found' });
@@ -92,6 +92,7 @@ router.post('/package', organizationMiddleware, async (req, res) => {
     await package.save();
     res.status(201).json(package);
   } catch (error) {
+    // console.log(error)
     res.status(400).json({ message: error.message });
   }
 });
@@ -119,18 +120,19 @@ router.get('/package/:id', async (req, res) => {
 });
 
 // Update Package
-router.put('/package/:id', async (req, res) => {
+router.put('/package/:id',organizationMiddleware, async (req, res) => {
   try {
     const package = await Package.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!package) return res.status(404).json({ message: 'Package not found' });
     res.json(package);
   } catch (error) {
+    // console.log(error)
     res.status(400).json({ message: error.message });
   }
 });
 
 // Delete Package
-router.delete('/package/:id', async (req, res) => {
+router.delete('/package/:id', organizationMiddleware, async (req, res) => {
   try {
     const package = await Package.findByIdAndDelete(req.params.id);
     if (!package) return res.status(404).json({ message: 'Package not found' });
