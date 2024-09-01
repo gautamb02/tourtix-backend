@@ -29,9 +29,9 @@ router.post('/activities',organizationMiddleware, async (req, res) => {
     const orgId = req.organization._id //.organization._id;
     const {businessId} = req.body;
 
-    console.log(orgId, businessId)
+    
     const business = await BusinessProfile.findOne({orgId , _id : businessId})
-    console.log(business)
+    
     if(!business){
       res.status(401).json({success :0, message : 'Unauthorized!'});
     }
@@ -77,8 +77,17 @@ router.delete('/activity/:id', async (req, res) => {
 
 // Package CRUD operations
 // Create Package
-router.post('/package', async (req, res) => {
+router.post('/package', organizationMiddleware, async (req, res) => {
   try {
+    const orgId = req.organization._id 
+    const {businessId} = req.body;
+   
+    const business = await BusinessProfile.findOne({orgId , _id : businessId})
+  
+    if(!business){
+      res.status(401).json({success :0, message : 'Unauthorized!'});
+    }
+
     const package = new Package(req.body);
     await package.save();
     res.status(201).json(package);
@@ -88,9 +97,10 @@ router.post('/package', async (req, res) => {
 });
 
 // Read All Packages
-router.get('/packages', async (req, res) => {
+router.get('/packages/:bid', organizationMiddleware, async (req, res) => {
   try {
-    const packages = await Package.find().populate('activities');
+    const businessId = req.params.bid
+    const packages = await Package.find({businessId}).populate('activities');
     res.json(packages);
   } catch (error) {
     res.status(500).json({ message: error.message });
